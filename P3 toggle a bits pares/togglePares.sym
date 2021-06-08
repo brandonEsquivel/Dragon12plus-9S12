@@ -1,0 +1,12 @@
+calcea     2109
+data0      1fff
+data1      30ff
+ea         1000
+impares    1003
+mask       0055
+maski      00aa
+pares      1002
+prog       2100
+store      212c
+toggleh    210e
+togglel    211c

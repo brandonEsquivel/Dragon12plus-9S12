@@ -1,0 +1,40 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                         ;----------------------------------------------------------------------------
+                         ;                LLamada a subrutina, ejemplo basico
+                         ;                EIE, UCR
+                         ;                Brandon Esquivel Molina
+                         ;                brandon.esquivel@ucr.ac.cr
+                         ;                Paso de parametros por memoria, indirecto a memoria,llamado
+                         ;		  a subrutina
+                         ;--------------------------------------------------------------------------
+                         ;                Declaracion de estructuras de datos
+                         ;--------------------------------------------------------------------------
+1000                                            org $1000
+0003                    CANT            equ 3                   ; Cte, cantidad de datos a copiar(tamano de los arreglos)
+1000 01 02 03           FUENTE          db $01,$02,$03          ; arreglo de datos fuente
+                        
+1010                                            org $1010
+1010                    Destino         ds CANT                ; arreglo de datos destino
+                        ;--------------------------------------------------------------------------
+                        ;               Programa principal
+                        ;--------------------------------------------------------------------------
+1500                                            org $1500
+1500 ce 10 00               ldx #FUENTE                        ; se carga la direccion del arreglo fuente
+1503 cd 10 10               ldy #DESTINO                       ; se carga la direccion del arreglo destino
+1506 16 15 0b               JSR sr_COPIAR                      ; se llama a subrutina, se calcula y apila la EA de retorno
+1509 20 fe                  bra *                              ; fin
+                        ;--------------------------------------------------------------------------
+                        ;                 SUBRUTINAS
+                        ;--------------------------------------------------------------------------
+150b                    sr_COPIAR:
+150b 18 0a e4 ec                movb A,X,A,Y             ; copia el valor de la direccion apuntado por x hacia la dirreccion apuntada por Y, indexado por acumulador
+150f 42                         inca                     ; incrementa acumulador usado como indice contador (offset de los arreglos)
+1510 81 03                      cmpa #CANT               ; comparacion con valor de referencia, cantidad de datos a copiar
+1512 25 f7                      blo sr_COPIAR            ; si es menor, osea no ha llegado al ultimo dato a copiar, vuelve a copiar siguiente dato
+1514 3d                         rts                      ; retorno, notese que no se ha apilado nada, en cuyo caso habria que desapilar esos valores, dejando solo la EA de retorno a desapilar
+
+Executed: Wed May 26 12:16:54 2021
+Total cycles: 27, Total bytes: 24
+Total errors: 0, Total warnings: 0

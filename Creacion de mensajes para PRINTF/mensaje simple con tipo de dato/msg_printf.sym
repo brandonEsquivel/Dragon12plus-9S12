@@ -1,0 +1,7 @@
+cr         000d
+finmsg     0000
+getchar    ee84
+lf         000a
+msg1       1000
+msg2       1021
+printf     ee88

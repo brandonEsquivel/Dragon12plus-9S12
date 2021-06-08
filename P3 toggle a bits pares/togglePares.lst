@@ -1,0 +1,61 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; 16/05/2021 EIE UCR IE623 MICROPROCESADORES
+                        ; Tarea 1 - Problema 3: Escriba el codigo de programa en ensamblador para un 9S12, que
+                        ; haga toogle a los bits pares (el LSB es el bit 0) del word en las posiciones
+                        ; de memoria cuya direccion efectiva es calculada por direccionamiento indirecto
+                        ; indexado por acumulador, utilizando el  X, el cual ser cargado por programa
+                        ; con $3000. El	 programa debe cargar el acumulador D con $0100. Ademas el
+                        ; resultado debe ser guardado en la direccion apuntada por el indice Y	menos
+                        ; 3 sin alterar el puntero Y.
+                        ; Asuma los valores en memoria descritos en data0 y data 1, ademas inicialice
+                        ; el indice Y en $1500, simulando que ya tenia ese valor antes de correrlo
+                        ; ============================================================================
+                        ;       		ESTRUCTURAS DE DATOS
+1000                    				org $1000
+1000                    EA              ds              $2           ;registro para guardar la dirrecion efectiva del word a procesar
+1002                    pares           ds              $1           ;registros temporal para almacenar un resultado intermedio de mascara
+1003                    impares         ds              $1
+0055                    MASK            EQU             $55          ;mascaras constantes a aplicar
+00aa                    MASKi           EQU             $AA
+2100                    PROG            EQU             $2100        ;direcicon inicio en memoria del programa
+                        
+1fff                                                    org $1FFF
+1fff 00 b3 1a 22 55 08  DATA0            db             $00,$B3,$1A,$22,$55,$08,$01        ;algunos datos de prueba
+     01
+30ff                                                    org $30FF
+30ff 10 20 00 02 43 55  DATA1            db      	$10,$20,$00,$02,$43,$55,$AA        ;algunos datos de prueba;
+     aa
+                        
+2100                                                    org PROG
+2100 ce 30 00                           ldx #$3000                      ;cargar en X el valor $3000
+2103 cc 01 00                           ldd #$0100                      ;cargar en D el valor $0100
+2106 cd 15 00                           ldy #$1500                      ;cargar en Y el valor $1500
+2109                    CalcEA:
+2109 ec e6                              ldd d,X                         ;se calcula la direccion efectiva $3100
+210b 7c 10 00                           std EA                          ;se almacena este valor en el registro temporal EA
+210e                    ToggleH:
+210e 41                                 coma                            ;se obtiene el complemento, toggle a todo el byte
+210f 84 55                              anda #MASK                      ;se aplica mascara para obtener bits pares con toggle
+2111 7a 10 02                           staa pares                      ;se guarda en el registro temporal pares los bit apres con toggle
+2114 fc 10 00                           ldd EA                          ;se vuelve a cargar el valor inicial de la palabra
+2117 84 aa                              anda #MASKi                     ;se obtienen solo los bit impares originales
+2119 bb 10 02                           adda pares                      ;se suman los resultados pares con toggle + impares
+                                        
+211c                    ToggleL:
+211c c4 55                              andb #MASK                      ;mismo procedimiento pero parte baja de la palabra, acumulador B
+211e 51                                 comb
+211f c4 55                              andb #MASK
+2121 7b 10 02                           stab pares
+2124 f6 10 01                           ldab EA+1
+2127 c4 aa                              andb #MASKi
+2129 fb 10 02                           addb pares
+212c                    Store:
+212c 6c 5d                              std -3,Y                        ; se guarda la palabra (2bytes) A:B (D) apartir de Y-3 ($1500-$03 = $14fd)
+212e 20 fe                              bra *                           ;fin
+                        
+
+Executed: Sat May 22 15:48:52 2021
+Total cycles: 53, Total bytes: 62
+Total errors: 0, Total warnings: 0

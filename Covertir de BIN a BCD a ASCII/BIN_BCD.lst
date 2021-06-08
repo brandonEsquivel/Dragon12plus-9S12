@@ -1,0 +1,37 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;--------------------------------------------------------------------
+                        ; Programa que convierte un numero Binario de 16-bit almacenado en
+                        ; $1000-$1001 a BCD y lo almacena en $1010-$1014. Una propuesta distinta.
+                        ; utiliza el metodo de divisiones.
+                        ;---------------------------------------------------------------------
+1000                                    org $1000
+1000 00 55              dato         dw %01010101         ; valor a convertir
+1010                                    org $1010
+1010                    resultado   ds.b 5             ; Se reserva memora para el resultado final
+2000                                    org $2000
+2000 fc 10 00                   ldd dato        ;D = numero a convertir
+2003 cd 10 10                   ldy #resultado  ;Y = apuntando a la primer posicion de resultado
+2006 ce 00 0a                   ldx #10         ;X = 10
+2009 18 10                      idiv            ;D/X  V->X, R->D
+200b 6b 44                      stab 4,Y        ;guardando el digito menos significativo
+200d b7 c5                      xgdx            ;se intercambian valores, nueva division
+200f ce 00 0a                   ldx #10         ;x=10
+2012 18 10                      idiv            ;Segunda division
+2014 6b 43                      stab 3,Y        ;guardando el segundo digito
+2016 b7 c5                      xgdx            ;se intercambian valores, nueva division
+2018 ce 00 0a                   ldx #10         ;x=10
+201b 18 10                      idiv            ;tercera division
+201d 6b 42                      stab 2,Y        ;salvando el digito siguiente, de en medio en este caso (n=5)
+201f b7 c5                      xgdx            ;se intercambian valores, nueva division
+2021 ce 00 0a                   ldx #10         ;x=10
+2024 18 10                      idiv            ;cuarta division,
+2026 6b 41                      stab 1,Y        ;se guarda el segundo digito mas significativo
+2028 b7 c5                      xgdx            ;se intercambian valores, nueva division
+202a 6b 40                      stab 0,Y        ;bit mas significativo
+202c 20 fe                      bra *           ;Fin del programa
+
+Executed: Fri May 21 15:58:55 2021
+Total cycles: 75, Total bytes: 48
+Total errors: 0, Total warnings: 0

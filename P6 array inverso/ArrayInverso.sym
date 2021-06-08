@@ -1,0 +1,10 @@
+baud_rate  0022
+buffer     1010
+cont_par   1004
+id         0001
+lazo       200d
+location   00ba
+n          0004
+nodo       1000
+prog       2000
+throughput 00af

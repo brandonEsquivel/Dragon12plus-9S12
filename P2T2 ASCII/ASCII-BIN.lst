@@ -1,0 +1,82 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;----------------------------------------------------------------------------
+                        ;                Conversor ASCII BIN
+                        ;                EIE, UCR
+                        ;                Brandon Esquivel Molina
+                        ;                brandon.esquivel@ucr.ac.cr
+                        ;                TAREA 2 - bin bcd bin AScII
+                        ;--------------------------------------------------------------------------
+                        ;                Declaracion de estructuras de datos
+                        ;--------------------------------------------------------------------------
+3c00                    PILA            EQU         $3C00
+000f                    MASK            EQU         $0F           ; mascara para nibble inferior
+2000                    PROG            EQU         $2000
+1000                                          org $1000
+1000                    CANT         ds         $1
+1001                    CONT         ds         $1
+1002                    OFFSET       ds         $1
+1003                    ACC          ds         $2
+1500                                            org $1500
+1500 30 31 32 39        DATOS_IOT            fcc "0129"
+1504 30 37 35 33        Dato2                fcc "0753"
+1508 33 39 35 34        Dato3                fcc "3954"
+150c 31 38 37 35        Dato4                fcc "1875"
+1510 30 30 37 36        Dato5                fcc "0076"
+1514 31 35 33 36        Dato6                fcc "1536"
+1518 30 35 33 34        Dato7                fcc "0534"
+151c 32 37 35 35        Dato8                fcc "2755"
+1520 32 30 32 31        Dato9                fcc "2021"
+1524 30 33 38 39        Dato10               fcc "0389"
+1530                                            org $1530
+1530                    DATOS_BIN       ds   CANT
+                        ;==============================================================================
+                        ;                 Programa principal
+                        ;==============================================================================
+2000                                            org PROG
+2000 18 0b 0a 10 00                   movb #10,CANT            ********* ya deberia estar pasado por getchar()
+2005 cf 3c 00                         lds #PILA                ********** usado en modo subrutina solamente
+2008 18 0b 00 10 01                   movb #0,CONT
+                        
+                        
+200d ce 00 01           NEXT:         ldx #1
+2010 18 03 00 00 10 03  	      movw #0,ACC
+2016 18 0b 03 10 02           	      movb #3,OFFSET
+                        
+201b b6 10 01           CONVERT:      ldaa CONT
+201e c6 04                            ldab #4
+2020 12                               mul
+2021 fb 10 02                         addb OFFSET                ************************
+2024 cd 15 00                         ldy #DATOS_IOT
+2027 e6 ed                            ldab B,Y
+2029 d0 30                            subb $30
+202b 19 00                            leay 0,X
+202d 13                               emul
+202e f3 10 03                         addd ACC
+2031 7c 10 03                         std ACC
+2034 b7 c5                            xgdx
+2036 86 0a                            ldaa #10
+2038 12                               mul
+2039 b7 c5                            xgdx
+203b 73 10 02                         dec OFFSET
+203e f7 10 02                         tst OFFSET
+2041 2d 02                            blt MOVE
+2043 20 d6                            bra CONVERT
+                        
+2045 b6 10 01           MOVE:         ldaa CONT
+2048 c6 02                            ldab #2
+204a 12                               mul
+204b cd 15 30                         ldy #DATOS_BIN
+204e 18 01 ed 10 03                   movw ACC,B,Y                         *******************
+2053 72 10 01                         inc CONT
+2056 b6 10 01                         ldaa CONT
+2059 b1 10 00                         cmpa CANT
+205c 25 af                            blo NEXT
+205e                    FIN:
+205e 20 fe                      bra *
+                         ;----------------------------------------------------------------------------
+
+Executed: Tue Jun 01 15:53:59 2021
+Total cycles: 103, Total bytes: 136
+Total errors: 0, Total warnings: 0

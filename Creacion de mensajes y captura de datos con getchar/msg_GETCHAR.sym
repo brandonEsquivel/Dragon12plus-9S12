@@ -1,0 +1,14 @@
+ciclo      2003
+cr         000d
+error      201e
+fin_msg    0000
+getchar    ee84
+lf         000a
+mensaje    2035
+msg1       1002
+msg2       1025
+msg3       1079
+np         000c
+print      2024
+printf     ee88
+temp       1000

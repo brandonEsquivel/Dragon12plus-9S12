@@ -1,0 +1,9 @@
+bcd        1000
+cont       1002
+fin        2036
+mask       000f
+mult       1028
+multiplicandos 102a
+next       2015
+num_bin    1020
+temp       1024

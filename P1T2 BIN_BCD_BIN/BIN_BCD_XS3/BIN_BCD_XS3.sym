@@ -1,0 +1,19 @@
+bcd_high   1004
+bcd_low    1005
+bin        1000
+cbin_bcd   2015
+l          1002
+low        1003
+mask_h     00f0
+mask_l     000f
+nibble_h0  2034
+nibble_h1  2043
+nibble_l0  201f
+nibble_l1  2028
+num_bcd    1010
+output     205c
+shift      2015
+sumar_03h  2079
+sumar_03l  2071
+sumar_30l  2075
+temp       1020

@@ -1,0 +1,30 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; ===========================================================================
+                        ; Programa/subrutina que convierte un valor en HEX a BCD
+                        ; por el metodo de divisiones
+                        ; funciona para valores menores a 100 ( no funciona para mas bytes o # > 99)
+                        ; El resultado se almacena/retorna en B
+                        ; Registros usados: A, B, X  (ojo almacenar en temporales o pila antes de llamar)
+                        ; El valor a convertir debe estar en B
+                        ; ===========================================================================
+                        
+0000                    Hex_BCD:
+0000 87                 	clra                    ; clear A (high order of D[a:b])
+0001 ce 00 0a                   ldx     #$000A          ; Store 10 in Reg X
+0004 18 10              	idiv                    ; Unsigned D/X.  Quot in X, rem in D
+0006 b7 50                      tfr     x,a             ; transfer quotient from low order
+                                                        ; byte of X to A
+0008 48                         lsla                    ; shift low order nibble of A into
+0009 48                         lsla                    ; high order
+000a 48                         lsla
+000b 48                         lsla
+                        
+000c 18 06                      aba                     ; add A and B (high and low order nibbles)
+000e b7 01                      tfr     a,b             ; copy A into B for output
+0010 3d                         rts
+
+Executed: Fri May 21 15:57:15 2021
+Total cycles: 26, Total bytes: 17
+Total errors: 0, Total warnings: 0

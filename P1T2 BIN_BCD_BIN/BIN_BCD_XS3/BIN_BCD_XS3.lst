@@ -1,0 +1,109 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                         ;----------------------------------------------------------------------------
+                         ;                Conversor BIN_BCD , BCD_BIN
+                         ;                EIE, UCR
+                         ;                Brandon Esquivel Molina
+                         ;                brandon.esquivel@ucr.ac.cr
+                         ;                TAREA 2 - bin bcd bin
+                         ;--------------------------------------------------------------------------
+                         ;                Declaracion de estructuras de datos                                                     ;
+                         ;----------------------------------------------------------------------------
+1000                                                    Org $1000
+                        
+1000 05 55              Bin             dw %010101010101   ; constante, mantiene el valor del numero binario a convertir en $1000-1
+1002 0b                 L               dB 11     ; constante, numero de desplazamientos para BCD de 12 bits
+                        
+1003                    LOW              ds $1    ; variable temporal 1 BYTE, para trabajar a nivel nibble
+1004                    BCD_HIGH         ds $1    ; variables de resultado intermedio para trabajar a nivel de Byte
+1005                    BCD_LOW          ds $1    ; variables de resultado intermedio para trabajar a nivel de Byte
+                        
+000f                    MASK_L          EQU $0F   ; mascara para nibble inferior
+00f0                    MASK_H          EQU $F0   ; mascara para nibble superior
+1010                                                    Org $1010
+1010                    NUM_BCD          ds $10  ; variable de resultado final BCD , inicia en $1010
+1020                    TEMP             ds $2   ; variable temporal de 2 Bytes, resultados de desplazamientos
+                        ;-----------------------------------------------------------------------------
+                        ;
+                        ;         Programa principal - Conversion
+                        ;
+                        ;--------------------------------------------------------------------------
+2000                                            Org $2000
+2000 87                                 clra          ; LIMPIEZA MEM
+2001 c7                                 clrb
+2002 79 10 03                           clr LOW
+2005 79 10 04                           clr BCD_HIGH
+2008 79 10 05                           clr BCD_Low
+200b 79 10 20                           clr TEMP
+200e fc 10 00                           ldd Bin       ; se carga en D el numero BIN a convertir a BCD
+2011 59                                 lsld          ; como es un numero de 12 bits, y D es de 16 bits
+2012 59                                 lsld          ; se desplazan los nibbles hasta la parte superior
+2013 59                                 lsld          ; del registro, para iniciar correctamente los
+2014 59                                 lsld          ; desplzamientos
+                        ;--------------------------------------------------------------------------
+                        ;------------------------- Conversion BIN a BCD ---------------------------
+2015                    cBIN_BCD
+                        ;Realiza la conversión de un número Binario de 12 bits
+                        ;a BCD utilizando el algoritmo XS3. El número binario está en el acumulador D.
+                        ;La rutina coloca el resultado en la variable NUM_BCD ubicada en la memoria a
+                        ; partir de la posición $1010.
+                        
+                        
+2015 59                 shift           lsld            ; Se despl c << D << 0
+2016 75 10 05                           rol BCD_LOW     ; Se rota el byte inferior: c << BCD_LOW << c
+2019 75 10 04                           rol BCD_HIGH    ; Se rota el byte superior: c << BCD_HIGH << c
+201c 7c 10 20                           std TEMP        ; se guarda el desp actual de D -> TEMP
+201f                    nibble_L0
+201f f6 10 05                           ldab BCD_LOW    ; se carga en b el byte bajo
+2022 c4 0f                              andb #MASK_L     ; se aplica mascara para primer nibble
+2024 c1 05                              cmpb #$05       ; se compara >= 5
+2026 24 49                              bhs  Sumar_03L  ; Si se cumple, suma 03, cmparacion para numeros sin signo
+                        
+2028 7b 10 03           nibble_L1       stab LOW        ; guarda el valor temporal del nibble inferior en LOW
+202b f6 10 05                           ldab BCD_LOW    ; vuelve a cargar el byte inferior para siguiente nibble
+202e c4 f0                              andb #MASK_H     ; mascara para nibble superior del byte inferior
+2030 c1 50                              cmpb #$50       ; se compara el nibble superior
+2032 24 41                              bhs  Sumar_30L  ; si se cumple, suma 03 a este nibble
+                        
+2034 fb 10 03           nibble_H0       addb LOW        ; a este resultado se le suma el resultado del nibble inferior
+2037 7b 10 05                           stab BCD_LOW    ; se guarda en BCL_LOW el resultado en B
+                        
+203a b6 10 04                           ldaa BCD_HIGH   ; se analiza ahora el byte superior, primer nibble
+203d 84 0f                              anda #MASK_L     ; mascara 0F, primer nibble unicamente
+203f 81 05                              cmpa #$05       ; comparacion con 05
+2041 24 36                              bhs  Sumar_03H  ; suma o salto siguiente, para # sin signo
+                        
+2043 7a 10 03           nibble_H1       staa LOW
+2046 b6 10 04                           ldaa BCD_HIGH
+2049 84 f0                              anda #MASK_H     ; mascara F0, nibble ALTO unicamente
+204b bb 10 03                           adda LOW
+204e 7a 10 04                           staa BCD_HIGH   ; Guardo en la variable byte temporal
+2051 fc 10 20                           ldd  TEMP       ; retomo el valor de D actual desplazado
+2054 73 10 02                           dec  L          ; decremento el contador
+2057 f7 10 02                           tst  L          ; verifico que no halla llegado a cero para continuar, sino finalizara
+205a 26 b9                              bne  shift      ; salta a un nuevo desplazamiento
+                                        
+205c 59                 output          lsld            ; Se despl c << D << 0      final
+205d 75 10 05                           rol BCD_LOW     ; Se rota el byte inferior: c << BCD_LOW << c final
+2060 75 10 04                           rol BCD_HIGH    ; Se rota el byte superior: c << BCD_HIGH << c final
+2063 7c 10 20                           std TEMP        ; se guarda el desp actual de D -> TEMP final, para debug, deberia ser $0000
+2066 b6 10 04                           ldaa BCD_HIGH   ; cargo byte alto del resultado
+2069 f6 10 05                           ldab BCD_LOW    ; cargo byte bajo del resultado
+206c 7c 10 10                           std NUM_BCD     ; guardo el resultado de D en la variable solicitada por el enunciado
+206f 20 fe                              bra *     ; salta a la converion de BCD a BI
+                                        
+                        ; branches de suma: estos procesos de sumar 3 al nibble correspondiende forman parte del
+                        ; algoritmo xs3, se pudieron sustituir por una instruccion daa de ajuste en suma BCD
+2071 cb 03              Sumar_03L       addb #$03
+2073 20 b3                              bra nibble_L1
+                        
+2075 cb 30              Sumar_30L       addb #$30
+2077 20 bb                              bra nibble_H0
+                        
+2079 8b 03              Sumar_03H       adda #$03
+207b 20 c6                              bra nibble_H1
+
+Executed: Tue May 25 15:07:15 2021
+Total cycles: 147, Total bytes: 128
+Total errors: 0, Total warnings: 0

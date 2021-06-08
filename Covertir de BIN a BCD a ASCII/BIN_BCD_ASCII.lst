@@ -1,0 +1,46 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;--------------------------------------------------------------------
+                        ; Programa que convierte un numero de 16-bit almacenado en
+                        ; $1000-$1001 a BCD y lo almacena en $1010-$1014. Luego
+                        ; convierte cada digito BCD en formato ASCII en un byte
+                        ;---------------------------------------------------------------------
+1000                                    org $1000
+1000 30 39              data         dw 12345         ; data to be tested
+1010                                    org $1010
+1010                    result         ds.b 5                 ; reserve bytes to store the result
+2000                                    org $2000
+2000 fc 10 00                   ldd data         ;D = the number to be converted
+2003 cd 10 10                   ldy #result         ;Y = the first address of result
+2006 ce 00 0a                   ldx #10         ;X = 10
+2009 18 10                      idiv                 ;D/X ? X, R?D
+                                
+200b cb 30                      addb #$30         ;convert the digit into ASCII code
+200d 6b 44                      stab 4,Y        ;save the least significant digit
+200f b7 c5                      xgdx
+2011 ce 00 0a                   ldx #10
+2014 18 10                      idiv
+                                
+2016 cb 30                      addb #$30         ;convert the digit 2 into ASCII code
+2018 6b 43                      stab 3,Y         ;save the second to least significant digit
+201a b7 c5                      xgdx
+201c ce 00 0a                   ldx #10
+201f 18 10                      idiv
+                                
+2021 cb 30                      addb #$30
+2023 6b 42                      stab 2,Y         ;save the middle digit
+2025 b7 c5                      xgdx
+2027 ce 00 0a                   ldx #10
+202a 18 10                      idiv
+                        
+202c cb 30                      addb #$30
+202e 6b 41                      stab 1,Y         ;save the second most significant digit
+2030 b7 c5                      xgdx
+2032 cb 30                      addb #$30
+2034 6b 40                      stab 0,Y         ;save the most significant digit
+2036 20 fe              FIN        bra *
+
+Executed: Tue May 18 07:30:12 2021
+Total cycles: 85, Total bytes: 58
+Total errors: 0, Total warnings: 0

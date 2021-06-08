@@ -1,0 +1,79 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;==================================================
+                        ;       PROBLEMA #1 - MODOS DE DIRECCIONAMIENTO
+                        ; Una posición de memoria ADRS contiene una dirección. A partir de dicha dirección
+                        ; hay un conjunto de L valores tipo byte con L<$A. Se debe realizar un programa para
+                        ; buscar en el conjunto de datos aquellos que tengan unos en al menos las posiciones
+                        ; 11001100 y trasladarlos al sector de la memoria que inicia en la dirección PATRON,
+                        ; además aquellos valores que tengan un 0 en el LSB o en el MSB hay que trasladarlos
+                        ; al sector de memoria que inicia en la posición CEROS.
+                        ; Se deben realizar dos versiones de este programa considerando:
+                        ; 1. Versión A: Hacer el movimiento de datos usando direccionamiento indexado de
+                        ; post incremento.
+                        ; 2. Versión B: Se debe hacer el movimiento de datos usando direccionamiento
+                        ;indexado por acumulador
+                        ;
+                        ;==================================================================================================
+                        ;=================================================================
+                        ; ------ NOTAS
+                        ;tipos de archivos:
+                        ;@octal
+                        ;$hex
+                        ;%bianrio
+                        ;nada decimal
+                        ;"" ASII
+                        
+                        ;Algunas instrucciones
+                                ; BrSet EA,MASK,OFFSET
+                                ; decx decy decrementa el indice
+                                ; Inx Iny incrementa el indice
+                                ; brset EA,mask,OFFSET ;direccionamiento relativo
+                        ;=================================================================
+                        ; VERSION A:
+                        
+1000                                            org $1000
+1000                    ADRS    	ds      $2
+1002 0a                 L               dB	$A
+                        
+1010                                            org $1010
+1010                    PATRON          ds      L               ; arreglo destino para valores que cumplen el patron, se definen L bytes de espacio, ya que es el mayor caso posible de alocamiento
+                        
+1020                                            org $1020
+1020                    CEROS           ds 	L              ; arreglo destino para valores que cumplen mask de bits, se definen L bytes de espacio, ya que es el mayor caso posible de alocamiento
+                        
+1500                                            org $1500
+1500 cc ff 54 65 98 a6  DATOS           db      $CC,$FF,$54,$65,$98,$A6,$B7,$79,$84,$A7         ; datos a procesar, no se instancio el vector directamente, por lo que hay que pasar esa direccion de inicio
+     b7 79 84 a7
+                        
+2000                                            org $2000
+                                                
+2000 18 03 15 00 10 00          movw #DATOS,ADRS   ;movw #$1500,ADRS   Se inicializa en runtime la direccion de inicio
+2006 fe 10 00           	ldx ADRS        ;direccionamiento extendido porque usa 2 bytes
+2009 cd 10 10                   ldy #PATRON     ;direccionamiento inmediato
+200c cf 10 20                   lds #CEROS      ;direccionamiento inmediato
+200f f6 10 02                   ldab L
+                        
+                        
+2012                    Siguiente:
+2012 0e 00 cc 0e        	brset 0,X,$CC,Mover_a_patron ;Verifica la mascara sobre el dato en el arreglo
+2016 0f 00 01 13                brclr 0,X,$01,Mover_a_ceros ;Verifica si hay un cero en LSB
+201a 0f 00 10 0f                brclr 0,X,$10,Mover_a_ceros ;Verifica si hay un cero en MSB
+201e 08                         inx
+                                	
+201f                    continue:
+201f 04 31 f0           	Dbne B,siguiente            ;decrementa si es distinto de cero y salta a siguiente, si es cero, ejecuta la siguiente instr FIN;
+2022 20 fe                      bra *
+                                	
+2024                    Mover_a_patron:
+2024 18 0a 30 70        	movb 1,X+,1,Y+                ;Mueve el byte dato analizado al arreglo patron almacenado en Y;
+2028 0e 1f 01 f3                brset -1,X,$01,continue       ;si tiene seteado el LSB, entonces salta a continuar, ya que no cumple la condicion de ceros.;
+202c 09                         dex
+202d                    Mover_a_ceros:
+202d 18 0a 30 b0                movb 1,X+,1,SP+              ;condicion de ceros, se mueve al valro de pila cargado con la direccion del arreglo CEROS;
+2031 20 ec              	bra continue
+
+Executed: Fri May 21 15:50:40 2021
+Total cycles: 51, Total bytes: 62
+Total errors: 0, Total warnings: 0

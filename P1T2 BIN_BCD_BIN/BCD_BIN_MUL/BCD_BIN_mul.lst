@@ -1,0 +1,78 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                         ;----------------------------------------------------------------------------
+                         ;                Conversor BIN_BCD , BCD_BIN
+                         ;                EIE, UCR
+                         ;                Brandon Esquivel Molina
+                         ;                brandon.esquivel@ucr.ac.cr
+                         ;                TAREA 2 - bin bcd bin
+                         ;--------------------------------------------------------------------------
+                         ;                Declaracion de estructuras de datos                                                     ;
+                         ;----------------------------------------------------------------------------
+1000                                                    Org $1000
+                        
+1000 26 01              BCD             dw $2601   ; constante, mantiene el valor del numero bcd a convertir, en $1000-1
+1002 03                 CONT            dB 3     ; constante, numero de desplazamientos para BCD de 12 bits
+000f                    MASK            EQU $0F   ; mascara para nibble inferior
+1020                                                    Org $1020
+1020                    NUM_BIN         ds $4  ; variable de resultado final binario, inicia en $1020
+1024                    TEMP            ds $4   ; variable temporal de 4 Bytes, resultados intermedios
+1028                    MULT            ds $2   ; variable temporal de 2 bytes para resultado de multiplicacion
+102a 00 0a 00 64 03 e8  Multiplicandos  dw 10,100,1000
+                        ;-----------------------------------------------------------------------------
+                        ;
+                        ;         Programa principal - Conversion
+                        ;
+                        ;--------------------------------------------------------------------------
+2000                                            Org $2000
+2000 87                                 clra          		; LIMPIEZA MEM
+2001 c7                                 clrb
+2002 79 10 24                           clr 	TEMP
+2005 79 10 28                           clr 	MULT
+                        ;============= PRIMER BLOQUE =====================================
+2008 fc 10 00           		ldd	BCD       ; se carga en D el numero BIN a convertir a BCD
+200b ce 10 2a                           ldx	#multiplicandos       ;indice X apunta a arreglo de multiplicadores de unidad-dec-cent       **************
+                        
+200e 49                 		lsrd          	;se omite el primer nibble, ya que se multiplica por 1, 4 desplazamientos a la derecha = /16;
+200f 49                                 lsrd
+2010 49                                 lsrd
+2011 49                                 lsrd
+2012 7c 10 24                           std     TEMP            ; guardando valor actual del desplazamiento
+                        ;--------------------------------------------------------------------------
+                        ;---------------------- Conversion BCD A BIN ---------------------------------
+                        ; realiza la conversión de un número BCD a Binario,
+                        ; utilizando el método de multiplicación de décadas y suma. El número en BCD es
+                        ; menor o igual a 9999 y está ubicado en el acumular D. La subrutina guarda el
+                        ; resultado en las posiciones de memoria NUM_BIN ubicadas a partir de la
+                        ; dirección $1020.
+                        
+                        
+                        
+2015 f7 10 02           NEXT:   tst 	CONT
+2018 27 1c                      beq     FIN         ; verificacion de condicion de parada
+201a 84 00              	anda	#0          ; se selecciona solo el primer nibble a multiplicar           *
+201c c4 0f                      andb	#MASK       ; Se obtiene solo el primer nibble
+201e ed 31                      ldy	2,X+        ; se carga en Y el multiplicando tipo word                            *******************
+2020 13                         emul	            ; Y * D -> Y:D
+2021 f3 10 20                   addd 	NUM_BIN     ; se suma al resultado de mult anterior
+2024 7c 10 20           	std 	NUM_BIN     ; se actualiza con el nuevo resultado;
+2027 73 10 02                   dec     CONT        ; decrementar contador
+202a fc 10 24                   ldd 	TEMP        ; recargando valor
+202d 49                         lsrd                ; se desplaza D cuatro veces a la derecha, para siguiente nibble, es igual a D/16
+202e 49                         lsrd
+202f 49                         lsrd
+2030 49                         lsrd
+2031 7c 10 24           	std 	TEMP
+2034 20 df                      bra     NEXT        ; salto a siguiente verificacion
+2036                    FIN:
+2036 fc 10 00                   ldd	BCD         ; Se recarga el valro original para obtener el primer nibble (unidades)
+2039 84 00                      anda	#0          ; ignorando el resto de bits;
+203b c4 0f                      andb	#MASK
+203d f3 10 20                   addd 	NUM_BIN     ; Se suma al resultado parcial para obtener el completo;
+2040 7c 10 20                   std	NUM_BIN     ; Resultado Final
+2043 20 fe              	bra *
+
+Executed: Tue May 25 20:21:41 2021
+Total cycles: 85, Total bytes: 78
+Total errors: 0, Total warnings: 0

@@ -1,0 +1,26 @@
+apilar     112b
+bcd_h      1001
+bcd_l      1002
+bin_bcd    1300
+cambio     1148
+cont_bin   1000
+cuenta     1003
+data       1000
+delay      1200
+down       1115
+incre      1004
+lazo_ext   1007
+lazo_int   1005
+lazo_med   1006
+lazoe      1205
+lazoi      120f
+lazom      120a
+next       110e
+pila       3c00
+prog       1100
+sr_bin_bcd 1300
+sr_delay   1200
+up         1120
+vale       000f
+vali       0019
+valm       0022

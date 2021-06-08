@@ -1,0 +1,42 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;==============================================================================
+                        ;Dado un arreglo de datos llamado NODO con ciertos parametros, copiar estos a
+                        ;un arreglo BUFFER en el orden inverso (cola-head), para ello use
+                        ;direccionamiento indirecto indexado para la lectura y porst-decremento para
+                        ;la escritura. El rpograma deberia solucionar el problema o no mas de 12 lineas
+                        ;==============================================================================
+                        ;                        Estructuras de Datos
+1000                                            org $1000
+0004                    N               EQU     $04             ;tamano del arreglo, numero de parametros en cada NODO
+2000                    PROG            EQU     $2000           ;Direccion inicio del programa
+0001                    ID              EQU     $01
+00ba                    Location        EQU     $BA
+0022                    Baud_Rate       EQU     $22
+00af                    Throughput      EQU     $AF
+                        
+1000 01 ba 22 af        NODO            db      #ID,#Location,#Baud_Rate,#Throughput               ;direccion inicial del arreglo NODO y sus valroes de parametros
+1004                    Cont_PAR        ds      $1              ;variable de conteo de parametros transferidos
+                        
+1010                                            org $1010
+1010                    BUFFER          ds      N               ; arreglo destino de los datos, de tamano maximo N
+                        ;==============================================================================
+2000                                            org PROG
+2000 ce 10 00                           ldx  #NODO              ;cargar direccion inicio del arreglo fuente en indice X
+2003 c6 04                              ldab #N                 ;se inicializa el contador CON EL ACUMULADOR B = 0
+2005 53                                 decb                    ;se inicia en N-1, ultima posicion del array fuente
+2006 cd 10 10                           ldy  #BUFFER            ;cargar en Y direcicon de arreglo destino para los datos que cumplen las condiciones
+2009 19 ed                              aby                        ;Se coloca el puntero Y en la ultima posicion del arreglo destino;
+200b c6 00                              ldab #0                 ;se inicializa b en cero
+200d                    Lazo:
+200d 18 0a e5 7f                        movb b,X,1,Y-           ;se aplica la copia/el traslado del parametro a la posicion destino, por acumulador b y por post-decremento
+2011 72 10 04           		inc Cont_PAR            ;Se incrementa el contador
+2014 52                 		incb                    ;se incrementa acumulador b
+2015 c1 04                              cmpb #N                 ;se realiza comparacion con signo
+2017 2d f4              		blt lazo                ;se comprueba si se llego al final del arreglo, si b es menor quel tamano del arreglo, se salta a lazo para siguiente dato
+2019 20 fe              		bra *                   ;fin de programa
+
+Executed: Sat May 22 19:48:35 2021
+Total cycles: 26, Total bytes: 31
+Total errors: 0, Total warnings: 0

@@ -1,0 +1,97 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;===============================================================================
+                        ; Obtencion de caracter por teclado y Creación de Mensajes para Printf en Ensamblador:
+                        ;                EIE, UCR
+                        ;                Brandon Esquivel Molina
+                        ;                brandon.esquivel@ucr.ac.cr
+                        ;                LLamado a subrutina GETCHAR y manejo de parametros
+                        ;==============================================================================
+1000                                            org $1000
+                        ; valores de control de ASCII
+000d                    CR:             EQU $0D
+000a                    LF:             EQU $0A
+000c                    NP:             EQU $0C
+ee88                    PrintF:         EQU $EE88
+ee84                    GETCHAR:        EQU $EE84
+0000                    FIN_MSG:        EQU $0
+                        
+1000                    TEMP:           ds 2
+                                       ; 103 caracteres por linea en terminal?
+1002 0c                 MSG1            db NP
+1003 20 53 65 6c 65 63  		FCC " Seleccione el Mensaje (1,2) "
+     63 69 6f 6e 65 20
+     65 6c 20 4d 65 6e
+     73 61 6a 65 20 28
+     31 2c 32 29 20
+1020 0d 0a 0d 0a                        FCB CR,LF,CR,LF
+1024 00                                 dB FIN_MSG
+                        
+1025 20 53 65 20 73 65  MSG2             FCC " Se selecciono el mensaje: %i"
+     6c 65 63 63 69 6f
+     6e 6f 20 65 6c 20
+     6d 65 6e 73 61 6a
+     65 3a 20 25 69
+1042 0d 0a 0d 0a                         FCB CR,LF,CR,LF
+1046 20 50 72 65 73 69                   FCC " Presione la tecla espaciadora para continuar "
+     6f 6e 65 20 6c 61
+     20 74 65 63 6c 61
+     20 65 73 70 61 63
+     69 61 64 6f 72 61
+     20 70 61 72 61 20
+     63 6f 6e 74 69 6e
+     75 61 72 20
+1074 0d 0a 0d 0a                         FCB CR,LF,CR,LF
+1078 00                 		 dB FIN_MSG
+                        
+1079 45 52 52 4f 52 21  MSG3            FCC "ERROR! Presione la tecla espaciadora para continuar "
+     20 50 72 65 73 69
+     6f 6e 65 20 6c 61
+     20 74 65 63 6c 61
+     20 65 73 70 61 63
+     69 61 64 6f 72 61
+     20 70 61 72 61 20
+     63 6f 6e 74 69 6e
+     75 61 72 20
+10ad 0d 0a 0d 0a        		FCB CR,LF,CR,LF
+10b1 00                 		dB FIN_MSG
+                        
+                        
+                        ;==============================================================================
+                        ;                Programa principal
+                        ;==============================================================================
+2000                                     org $2000
+2000 cf 3b ff                    lds #$3BFF
+                        
+2003 ce 00 00           CICLO:   ldx #$0
+2006 cc 10 02                    ldd #MSG1
+2009 15 e3 ee 88                 jsr [PrintF,X]
+                        
+200d ce 00 00                    ldx #$0
+2010 15 e3 ee 84                 jsr [GETCHAR,X]
+                        
+2014 c0 30                       subb #$30
+                        
+2016 c1 01                       cmpb #1
+2018 27 1b                       beq  Mensaje
+201a c1 02                       cmpb #2
+201c 27 17                       beq  Mensaje
+201e ce 00 00           ERROR:   ldx #$0
+2021 cc 10 79                    ldd #MSG3
+2024 15 e3 ee 88        print:   jsr [PrintF,X]
+2028 ce 00 00                    ldx #0
+202b 15 e3 ee 84                 jsr [GETCHAR,X]
+202f c1 20                       cmpb #$20
+2031 26 eb                       bne ERROR
+2033 20 ce              	 bra CICLO
+                        
+                        
+2035 3b                 Mensaje:  pshd
+2036 ce 00 00                     ldx #0
+2039 cc 10 25                     ldd #MSG2
+203c 20 e6                        bra print
+
+Executed: Thu May 27 11:38:42 2021
+Total cycles: 56, Total bytes: 238
+Total errors: 0, Total warnings: 0

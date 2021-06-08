@@ -1,0 +1,38 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;******************************************************************---------
+                        ; codigo ejemplo adaptado: Clase 4.2-3 Escribir un programa que busque el numero mas
+                        ; grande de una coleccion de N numeros con signo, ubicados en la memoria a
+                        ; partir de la posicion ARRAY y lo coloque en la posicion Valor_Max
+                        ; Se realiza con barrido ascendente, direccionamiento indexado post-incremento
+                        ;******************************************************************---------
+                                                ;org $1000 ; INICIA MEM RAM
+                        ;ARRAY                 ds 2        ; variable direccion inicio del arreglo, dirrecion de 16 bits
+                                                ;luego se sobreescribe con la direccion de los datos
+                                                
+1000                                            org $1000
+1000                    Valor_Max       ds 1     ; variable donde almacenar el valor maximo del arreglo
+0009                    N               EQU 9    ; constante tamano del arreglo
+                        
+2000                                            org $2000
+2000 03 02 03 0b 04 07  ARRAY           db 3,2,3,11,4,7,2,4,10  ; valores de la tabla, direccion de array
+     02 04 0a
+                        
+4000                                            org $4000 ; seccion para el codigo de programa, en FLASH
+4000 b6 20 00                   ldaa ARRAY                ; se usa acum A como indice pos del arreglo
+4003 7a 10 00                   staa Valor_Max            ; se carga el primer valor del arreglo
+4006 ce 20 00                   ldx #ARRAY                ; Carga primer posicion del arreglo
+4009 c6 09                      ldab #N                   ; cargar tamano de arreglo N en B
+400b                    lazo:
+400b b6 10 00               ldaa Valor_Max          ; cargamos el valor maximo actual
+400e a1 30                  cmpa 1,x+               ; Comparamos A con X , luego lo decrementa
+4010 2c 05                  bge chk_Fin             ; Salta comparando mayor que, A con X, luego de la comparacion, si es mayor A(maximo actual) que el dato en X. Si no es asi, entonces modifica el nuevo valor maximo.
+4012 18 0d 1f 10 00         movb -1,x,Valor_Max      ; Guarda el nuevo valor maximo
+4017                    chk_Fin:
+4017 04 31 f1               dbne b,lazo
+401a 20 fe              siga: bra siga          ; bucle infinito para control de final de programa
+
+Executed: Fri May 21 12:39:46 2021
+Total cycles: 30, Total bytes: 37
+Total errors: 0, Total warnings: 0

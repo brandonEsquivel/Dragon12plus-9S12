@@ -1,0 +1,58 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;===============================================================================
+                        ;              Creación de Mensajes para Printf en Ensamblador:
+                        ;                EIE, UCR
+                        ;                Brandon Esquivel Molina
+                        ;                brandon.esquivel@ucr.ac.cr
+                        ;                LLamado a subrutina PRINTF y manejo de pila
+                        ;==============================================================================
+000d                    CR:                 EQU $0D
+000a                    LF:                 EQU $0A
+ee88                    PrintF:         EQU $EE88
+ee84                    GETCHAR:        EQU $EE84
+0000                    FINMSG:         EQU $0
+                        
+1000                                    org $1000
+1000 20 49 6e 67 72 65  MSG1             FCC " Ingrese un valor entre 0 y 9"
+     73 65 20 75 6e 20
+     76 61 6c 6f 72 20
+     65 6e 74 72 65 20
+     30 20 79 20 39
+101d 0d 0d 0a                            dB CR,CR,LF
+1020 00                                  dB FINMSG
+                        
+1021 20 45 6c 20 2d 76  MSG2             FCC " El -valor ingresado HEX es: %u"
+     61 6c 6f 72 20 69
+     6e 67 72 65 73 61
+     64 6f 20 48 45 58
+     20 65 73 3a 20 25
+     75
+1040 0d 0d 0a                            dB CR,CR,LF
+1043 00                                  dB FINMSG
+                        ;==============================================================================
+                        ;                Programa principal
+                        ;==============================================================================
+2000                                     org $2000
+2000 cf 3b ff                    lds #$3BFF
+2003 ce 00 00                    ldx #$0
+2006 cc 10 00                    ldd #MSG1
+2009 15 e3 ee 88                jsr [PrintF,X]
+                        
+200d ce 00 00                    ldx #$0
+2010 15 e3 ee 84                 jsr [GETCHAR,X]
+                        
+2014 c0 30                       subb #$30
+2016 50                          negb
+2017 b7 14                       sex b,d
+                         
+2019 3b                          pshd
+201a ce 00 00                    ldx #$0000
+201d cc 10 21                    ldd #MSG2
+2020 15 e3 ee 88                 jsr [PrintF,X]
+2024 20 fe                       bra *
+
+Executed: Thu May 27 01:27:07 2021
+Total cycles: 33, Total bytes: 106
+Total errors: 0, Total warnings: 0

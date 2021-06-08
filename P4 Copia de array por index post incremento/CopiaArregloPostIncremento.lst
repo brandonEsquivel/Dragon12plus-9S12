@@ -1,0 +1,43 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ;==============================================================================
+                        ;Un arreglo es un conjunto de posiciones de memoria con direcciones consecutivas
+                        ;Considere un arreglo de N datos a partir de la direccion DATOS, donde N es un valor
+                        ;numérico conocido (no es una variable) con N<200. Los valores en el arreglo son
+                        ;de 1 byte con signo. Escriba un programa en lenguaje ensamblador para el 9S12
+                        ;que revise los N valores y copie los valores que siendo mayores de -50 sean
+                        ;impares, a las localizaciones de memoria a partir de la posición MAYORES.
+                        ;Utilice direccionamiento indexado de post incremento tanto para la lectura de
+                        ;los valores como para su movimiento.
+                        ;==============================================================================
+                        ;                        Estructuras de Datos
+1000                                            org $1000
+000a                    N               EQU     10              ;tamano del arreglo
+ffce                    UMBRAL          EQU     -50             ;umbral definido por la aplicacion
+2000                    PROG            EQU     $2000           ;Direccion inicio del programa
+1000 07 01 03 00 04 06  ADRS            db      $07,$01,$03,$00,$04,$06,$05,$07,$08,$09    ;un arreglo de 10 datos para prueba, podria definirse como ADRS ds N
+     05 07 08 09
+1200                                            org $1200
+1200                    MAYORES         ds      N               ; arreglo destino de los datos, de tamano maximo N
+                        ;;==============================================================================
+2000                                            org PROG
+2000 ce 10 00                           ldx #ADRS               ;cargar direccion inicio del arreglo en indice X
+2003 c6 0a              		ldab #N                 ;cargar 10 en acumulador B, usado como contador
+2005 cd 12 00           		ldy #MAYORES            ;cargar en Y direcicon de arreglo destino para los datos que cumplen las condiciones
+                                        
+2008                    Lazo:
+2008 a6 30                              ldaa 1,X+               ;carga X y luego, suma X+1 a pos
+200a b1 ff ce                           cmpa UMBRAL             ;Primer condicion, Se compara con el umbral establecido (-50)
+200d 2d 0b                              blt FIN                 ;si es menor que -50(no cumple) salta a fin para siguiente dato o final
+200f 0f 1f 01 07                        brclr -1,X,$01,FIN      ;segunda condicion, si no tiene el seteado el primer bit (LSB=0) significa que es par, por tanto se salta a FIN
+2013 09                                 dex                     ;Si no salta, es impar(LSB=1), para usar der index post incremento, se decrementa al valor analizado del array
+2014 18 0a 30 70        		movb 1,X+,1,Y+          ;se aplica la copia/el traslado de los datos a la posicion destino
+2018 20 00                              bra FIN                 ;salta a comprobacion de fin
+201a                    FIN:
+201a 04 31 eb                           dbne b,lazo             ;se comprueba si se llego al final del arreglo, si b no es cero aun, se salta a lazo para siguiente dato
+201d 20 fe                              bra *                   ;fin de programa
+
+Executed: Sat May 22 18:13:37 2021
+Total cycles: 32, Total bytes: 41
+Total errors: 0, Total warnings: 0
